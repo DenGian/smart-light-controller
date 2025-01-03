@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightSystem", "SmartLightSystem\SmartLightSystem.csproj", "{FB5DB48A-0987-4BFA-926A-E4333C95A741}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightSystem.UnitTests", "SmartLightSystem.UnitTests\SmartLightSystem.UnitTests.csproj", "{E1A296A2-C640-4CC9-A32D-F45CC603966C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{FB5DB48A-0987-4BFA-926A-E4333C95A741}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB5DB48A-0987-4BFA-926A-E4333C95A741}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB5DB48A-0987-4BFA-926A-E4333C95A741}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1A296A2-C640-4CC9-A32D-F45CC603966C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1A296A2-C640-4CC9-A32D-F45CC603966C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1A296A2-C640-4CC9-A32D-F45CC603966C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1A296A2-C640-4CC9-A32D-F45CC603966C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
