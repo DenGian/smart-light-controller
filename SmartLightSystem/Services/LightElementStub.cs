@@ -4,20 +4,20 @@ namespace SmartLightSystem.Services;
 
 public class LightElementStub : ILightElement
 {
-    private bool isEnabled = false;
+    private bool _isEnabled = false;
 
     public bool IsEnabled
     {
-        get { return isEnabled; }
+        get { return _isEnabled; }
     }
 
     public void Disable()
     {
-        isEnabled = false;
+        _isEnabled = false;
     }
 
     public void Enable()
     {
-        isEnabled = true;
+        _isEnabled = true;
     }
 }
