@@ -10,8 +10,8 @@ public class TimeProviderReal : ITimeProvider
 
     public string Url
     {
-        get => _url;
-        set => _url = value;
+        get { return _url; }
+        set { _url = value; }
     }
 
     public DateTime GetCurrentTime()
