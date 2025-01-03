@@ -32,7 +32,7 @@ public class LightController
 
     public bool InSafeMode
     {
-        get { return (failures < MaxFailures) ? false : true; }
+        get { return failures >= MaxFailures; }
     }
 
     public LightController(ITimeProvider timeProvider, ILightElement lightElement)
