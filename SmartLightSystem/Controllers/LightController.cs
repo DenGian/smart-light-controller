@@ -4,49 +4,49 @@ namespace SmartLightSystem.Controllers;
 
 public class LightController
 {
-    private readonly ITimeProvider timeProvider;
-    private readonly ILightElement lightElement;
+    private readonly ITimeProvider _timeProvider;
+    private readonly ILightElement _lightElement;
 
-    private int failures = 0;
+    private int _failures = 0;
 
-    private TimeSpan startTime;
+    private TimeSpan _startTime;
     public TimeSpan StartTime
     {
-        get { return startTime; }
-        set { startTime = value; }
+        get { return _startTime; }
+        set { _startTime = value; }
     }
 
-    private TimeSpan endTime;
+    private TimeSpan _endTime;
     public TimeSpan EndTime
     {
-        get { return endTime; }
-        set { endTime = value; }
+        get { return _endTime; }
+        set { _endTime = value; }
     }
 
-    private int maxFailures;
+    private int _maxFailures;
     public int MaxFailures
     {
-        get { return maxFailures; }
-        set { maxFailures = value; }
+        get { return _maxFailures; }
+        set { _maxFailures = value; }
     }
 
     public bool InSafeMode
     {
-        get { return failures >= MaxFailures; }
+        get { return _failures >= MaxFailures; }
     }
 
     public LightController(ITimeProvider timeProvider, ILightElement lightElement)
     {
-        this.timeProvider = timeProvider;
-        this.lightElement = lightElement;
+        _timeProvider = timeProvider;
+        _lightElement = lightElement;
     }
 
     public void Work()
     {
         try
         {
-            DateTime currentTime = timeProvider.GetCurrentTime();
-            failures = 0;
+            DateTime currentTime = _timeProvider.GetCurrentTime();
+            _failures = 0;
 
             TimeSpan current = currentTime.TimeOfDay;
 
@@ -54,31 +54,31 @@ public class LightController
             {
                 if (current >= StartTime && current < EndTime)
                 {
-                    lightElement.Enable();
+                    _lightElement.Enable();
                 }
                 else
                 {
-                    lightElement.Disable();
+                    _lightElement.Disable();
                 }
             }
             else
             {
                 if (current >= StartTime || current < EndTime)
                 {
-                    lightElement.Enable();
+                    _lightElement.Enable();
                 }
                 else
                 {
-                    lightElement.Disable();
+                    _lightElement.Disable();
                 }
             }
         }
         catch
         {
-            failures++;
-            if (failures >= MaxFailures)
+            _failures++;
+            if (_failures >= MaxFailures)
             {
-                lightElement.Disable();
+                _lightElement.Disable();
             }
         }
     }
