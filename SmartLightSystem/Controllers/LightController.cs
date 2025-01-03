@@ -50,13 +50,27 @@ public class LightController
 
             TimeSpan current = currentTime.TimeOfDay;
 
-            if (current >= StartTime && current < EndTime)
+            if (StartTime <= EndTime)
             {
-                lightElement.Enable();
+                if (current >= StartTime && current < EndTime)
+                {
+                    lightElement.Enable();
+                }
+                else
+                {
+                    lightElement.Disable();
+                }
             }
             else
             {
-                lightElement.Disable();
+                if (current >= StartTime || current < EndTime)
+                {
+                    lightElement.Enable();
+                }
+                else
+                {
+                    lightElement.Disable();
+                }
             }
         }
         catch
