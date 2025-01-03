@@ -21,7 +21,11 @@ public class TimeProviderReal : ITimeProvider
             var httpResponse = httpClient.GetAsync(_url).GetAwaiter().GetResult();
             var response = httpResponse.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             var timeResponse = JsonConvert.DeserializeObject<TimeResponse>(response);
-            return DateTime.Parse(timeResponse.datetime);
+            if (timeResponse != null)
+            {
+                return DateTime.Parse(timeResponse.datetime);
+            }
         }
+        throw new Exception("Failed to get the current time.");
     }
 }
