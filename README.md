@@ -101,15 +101,23 @@ classDiagram
         +bool InSafeMode
         +LightController(ITimeProvider, ILightElement)
         +void Work()
-        -bool IsWithinActiveHours(TimeSpan)
-        -void HandleTimeFailure()
-        -void ResetFailures()
     }
 
     class TimeProviderReal {
         -string _url
         +string Url
         +DateTime GetCurrentTime()
+    }
+
+    class TimeProvider {
+        +string Url
+        +DateTime GetCurrentTime()
+    }
+
+    class LightElement {
+        +bool IsEnabled
+        +void Enable()
+        +void Disable()
     }
 
     class LightElementStub {
@@ -119,10 +127,21 @@ classDiagram
         +void Disable()
     }
 
+    class TimeResponse {
+        +string datetime
+        +int day_of_week
+        +int day_of_year
+        +int week_number
+        +string timezone
+    }
+
     LightController --> ITimeProvider
     LightController --> ILightElement
     TimeProviderReal ..|> ITimeProvider
+    TimeProvider ..|> ITimeProvider
+    LightElement ..|> ILightElement 
     LightElementStub ..|> ILightElement
+    TimeProviderReal --> TimeResponse : uses
 ```
 
 ## Test Design & Implementation
