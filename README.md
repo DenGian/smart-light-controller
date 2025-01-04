@@ -1,12 +1,13 @@
 # SmartLight System Design Documentation
 
 ## Table of Contents
-* [Overview](#Overview)
+* [Overview](#overview)
 * [System Design Process](#system-design-process)
 * [Architecture](#architecture)
 * [Test Design & Implementation](#test-design--implementation)
 * [Implementation Details](#implementation-details)
 * [Future Enhancements](#future-enhancements)
+* [Development Approach](#development-approach)
 * [Conclusion](#conclusion)
 
 ## Overview
@@ -308,6 +309,30 @@ The integration tests verify:
 * Smart home systems
 * Building automation
 * Energy management systems
+
+## Development Approach
+
+The system was developed using Test-Driven Development (TDD):
+
+### First Phase: Core structure and interfaces
+* Defined basic interfaces for time and light control
+* Implemented basic controller structure
+* Created initial tests for basic functionality
+
+### Second Phase: Basic functionality
+* Implemented time-based control
+* Added basic error handling
+* Created tests for normal operation
+
+### Third Phase: Error handling and edge cases
+* Added safe mode functionality
+* Implemented failure counting
+* Created tests for error scenarios
+
+### Fourth Phase: Refinement
+* Added boundary condition handling
+* Improved overnight period handling
+* Added tests for edge cases
 
 ## Conclusion
 The SmartLight System demonstrates robust design through:
