@@ -6,9 +6,16 @@ namespace SmartLightSystem.UnitTests;
 
 public class LightControllerTests
 {
-    private readonly TimeSpan _startTime = new TimeSpan(20, 0, 0); // 8 PM
-    private readonly TimeSpan _endTime = new TimeSpan(6, 0, 0);   // 6 AM
-    private readonly int _maxFailures = 2;
+    // Constants for commonly used times
+    private const int EveningHour = 20; // 8 PM
+    private const int MorningHour = 6; // 6 AM
+    private const int MaxFailures = 2;
+
+    private static readonly TimeSpan StandardStartTime = new TimeSpan(EveningHour, 0, 0);
+    private static readonly TimeSpan StandardEndTime = new TimeSpan(MorningHour, 0, 0);
+    private static readonly TimeSpan Midnight = new TimeSpan(0, 0, 0);
+    private static readonly TimeSpan Noon = new TimeSpan(12, 0, 0);
+    private static readonly TimeSpan OneMinute = new TimeSpan(0, 1, 0);
 
     private readonly Mock<ITimeProvider> _timeProviderMock;
     private readonly Mock<ILightElement> _lightElementMock;
@@ -21,18 +28,18 @@ public class LightControllerTests
 
         _controller = new LightController(_timeProviderMock.Object, _lightElementMock.Object)
         {
-            StartTime = _startTime,
-            EndTime = _endTime,
-            MaxFailures = _maxFailures
+            StartTime = StandardStartTime,
+            EndTime = StandardEndTime,
+            MaxFailures = MaxFailures
         };
     }
 
     [Fact]
     public void Work_WhenTimeIsDuringActiveHours_EnablesLight()
     {
-        // Arrange
+        // Arrange - Set time to 10 PM, which is during the active period (8 PM - 6 AM)
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(22, 0, 0))); // 10 PM
+            .Returns(DateTime.Today.Add(new TimeSpan(22, 0, 0)));
 
         // Act
         _controller.Work();
@@ -45,9 +52,9 @@ public class LightControllerTests
     [Fact]
     public void Work_WhenTimeIsOutsideActiveHours_DisablesLight()
     {
-        // Arrange
+        // Arrange - Set time to noon, which is outside the active period
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(12, 0, 0))); // 12 PM
+            .Returns(DateTime.Today.Add(Noon));
 
         // Act
         _controller.Work();
@@ -60,9 +67,9 @@ public class LightControllerTests
     [Fact]
     public void Work_WhenTimeEqualsStartTime_EnablesLight()
     {
-        // Arrange
+        // Arrange - Set time exactly to start time (8 PM)
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(_startTime));
+            .Returns(DateTime.Today.Add(StandardStartTime));
 
         // Act
         _controller.Work();
@@ -75,9 +82,9 @@ public class LightControllerTests
     [Fact]
     public void Work_WhenTimeEqualsEndTime_DisablesLight()
     {
-        // Arrange
+        // Arrange - Set time exactly to end time (6 AM)
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(_endTime));
+            .Returns(DateTime.Today.Add(StandardEndTime));
 
         // Act
         _controller.Work();
@@ -90,14 +97,14 @@ public class LightControllerTests
     [Fact]
     public void Work_WhenTimeFailsAndNotInSafeMode_DoNothing()
     {
-        // Arrange
+        // Arrange - Simulate a single time retrieval failure
         _timeProviderMock.Setup(x => x.GetCurrentTime())
             .Throws<Exception>();
 
         // Act
         _controller.Work();
 
-        // Assert
+        // Assert - Should not enter safe mode on first failure
         Assert.False(_controller.InSafeMode);
         _lightElementMock.Verify(x => x.Enable(), Times.Never);
         _lightElementMock.Verify(x => x.Disable(), Times.Never);
@@ -106,17 +113,17 @@ public class LightControllerTests
     [Fact]
     public void Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode()
     {
-        // Arrange
+        // Arrange - Simulate repeated time retrieval failures
         _timeProviderMock.Setup(x => x.GetCurrentTime())
             .Throws<Exception>();
 
-        // Act
-        for (int i = 0; i < _maxFailures; i++)
+        // Act - Trigger failures up to max limit
+        for (int i = 0; i < MaxFailures; i++)
         {
             _controller.Work();
         }
 
-        // Assert
+        // Assert - Should enter safe mode and disable light
         Assert.True(_controller.InSafeMode);
         _lightElementMock.Verify(x => x.Disable(), Times.Once);
     }
@@ -125,70 +132,71 @@ public class LightControllerTests
     public void Work_WhenInSafeModeAndTimeSucceeds_ResetsSafeMode()
     {
         // Arrange
-        // First trigger safe mode
+        // First trigger safe mode through repeated failures
         _timeProviderMock.Setup(x => x.GetCurrentTime())
             .Throws<Exception>();
-        for (int i = 0; i <= _maxFailures; i++)
+        for (int i = 0; i <= MaxFailures; i++)
         {
             _controller.Work();
         }
 
-        // Then succeed
+        // Then simulate successful time retrieval
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(12, 0, 0)));
+            .Returns(DateTime.Today.Add(Noon));
 
         // Act
         _controller.Work();
 
-        // Assert
+        // Assert - Should exit safe mode
         Assert.False(_controller.InSafeMode);
     }
 
     [Fact]
     public void Work_WhenStartTimeEqualsEndTime_LightStaysDisabled()
     {
-        // Arrange
-        _controller.StartTime = new TimeSpan(12, 0, 0);
-        _controller.EndTime = new TimeSpan(12, 0, 0);
+        // Arrange - Set start and end time to the same value
+        var sameTime = Noon;
+        _controller.StartTime = sameTime;
+        _controller.EndTime = sameTime;
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(12, 0, 0)));
+            .Returns(DateTime.Today.Add(sameTime));
 
         // Act
         _controller.Work();
 
-        // Assert
+        // Assert - Light should stay disabled when start equals end time
         _lightElementMock.Verify(x => x.Disable(), Times.Once);
     }
 
     [Fact]
     public void Work_WhenTimeSpansOvernight_EnablesLightAfterStartTime()
     {
-        // Arrange
-        _controller.StartTime = new TimeSpan(22, 0, 0); // 10 PM
-        _controller.EndTime = new TimeSpan(6, 0, 0);    // 6 AM
+        // Arrange - Test overnight period (10 PM - 6 AM), checking 11 PM
+        _controller.StartTime = new TimeSpan(22, 0, 0);
+        _controller.EndTime = StandardEndTime;
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(23, 0, 0))); // 11 PM
+            .Returns(DateTime.Today.Add(new TimeSpan(23, 0, 0)));
 
         // Act
         _controller.Work();
 
-        // Assert
+        // Assert - Light should be enabled during overnight period
         _lightElementMock.Verify(x => x.Enable(), Times.Once);
     }
 
     [Fact]
     public void Work_WhenTimeSpansOvernight_EnablesLightBeforeEndTime()
     {
-        // Arrange
-        _controller.StartTime = new TimeSpan(22, 0, 0); // 10 PM
-        _controller.EndTime = new TimeSpan(6, 0, 0);    // 6 AM
+        // Arrange - Test overnight period (10 PM - 6 AM), checking 5 AM
+        _controller.StartTime = new TimeSpan(22, 0, 0);
+        _controller.EndTime = StandardEndTime;
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(5, 0, 0))); // 5 AM
+            .Returns(DateTime.Today.Add(new TimeSpan(5, 0, 0)));
 
         // Act
         _controller.Work();
 
-        // Assert
+        // Assert - Light should be enabled during overnight period
         _lightElementMock.Verify(x => x.Enable(), Times.Once);
     }
 
@@ -196,38 +204,54 @@ public class LightControllerTests
     public void Work_AfterFailure_ResetsFailureCountOnSuccess()
     {
         // Arrange
-        // First cause a failure
+        // Step 1: Cause initial failure
         _timeProviderMock.Setup(x => x.GetCurrentTime())
             .Throws<Exception>();
         _controller.Work();
 
-        // Then succeed
+        // Step 2: Succeed once
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(12, 0, 0)));
+            .Returns(DateTime.Today.Add(Noon));
         _controller.Work();
 
-        // Then fail again - shouldn't enter safe mode yet
+        // Step 3: Fail again - shouldn't trigger safe mode due to reset
         _timeProviderMock.Setup(x => x.GetCurrentTime())
             .Throws<Exception>();
         _controller.Work();
 
-        // Assert
+        // Assert - Should not be in safe mode after single failure post-reset
         Assert.False(_controller.InSafeMode);
     }
 
     [Fact]
     public void Work_WhenOneMinuteBeforeEndTime_StillEnabled()
     {
-        // Arrange
-        _controller.StartTime = new TimeSpan(20, 0, 0); // 8 PM
-        _controller.EndTime = new TimeSpan(6, 0, 0);    // 6 AM
+        // Arrange - Test one minute before end time
+        var oneMinuteBeforeEnd = StandardEndTime.Subtract(OneMinute);
         _timeProviderMock.Setup(x => x.GetCurrentTime())
-            .Returns(DateTime.Today.Add(new TimeSpan(5, 59, 0))); // 5:59 AM
+            .Returns(DateTime.Today.Add(oneMinuteBeforeEnd));
 
         // Act
         _controller.Work();
 
-        // Assert
+        // Assert - Light should still be enabled just before end time
         _lightElementMock.Verify(x => x.Enable(), Times.Once);
+    }
+
+    [Fact]
+    public void Work_WhenTimeIsExactlyMidnight_HandlesOvernightPeriodCorrectly()
+    {
+        // Arrange - Set time to exactly midnight during overnight period
+        _controller.StartTime = new TimeSpan(22, 0, 0); // 10 PM
+        _controller.EndTime = new TimeSpan(6, 0, 0);    // 6 AM
+        _timeProviderMock.Setup(x => x.GetCurrentTime())
+            .Returns(DateTime.Today.Add(Midnight));
+
+        // Act
+        _controller.Work();
+
+        // Assert - Light should be enabled at midnight during overnight period
+        _lightElementMock.Verify(x => x.Enable(), Times.Once);
+        _lightElementMock.Verify(x => x.Disable(), Times.Never);
     }
 }
