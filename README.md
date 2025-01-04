@@ -1,7 +1,7 @@
 # SmartLight System Design Documentation
 
 ## Table of Contents
-* [Overview](#overview)
+* [Overview](#Overview)
 * [System Design Process](#system-design-process)
 * [Architecture](#architecture)
 * [Test Design & Implementation](#test-design--implementation)
@@ -75,59 +75,56 @@ The system was designed through a systematic approach:
 
 ### Class Diagram
 
-```plantuml
-@startuml
-skinparam classAttributeIconSize 0
+```mermaid
+classDiagram
+    class ITimeProvider {
+        +string Url
+        +DateTime GetCurrentTime()
+    }
 
-interface ITimeProvider {
-   +string Url { get; set; }
-   +DateTime GetCurrentTime()
-}
+    class ILightElement {
+        +bool IsEnabled
+        +void Enable()
+        +void Disable()
+    }
 
-interface ILightElement {
-   +bool IsEnabled { get; }
-   +void Enable()
-   +void Disable()
-}
+    class LightController {
+        -ITimeProvider _timeProvider
+        -ILightElement _lightElement
+        -int _failures
+        -TimeSpan _startTime
+        -TimeSpan _endTime  
+        -int _maxFailures
+        +TimeSpan StartTime
+        +TimeSpan EndTime
+        +int MaxFailures
+        +bool InSafeMode
+        +LightController(ITimeProvider, ILightElement)
+        +void Work()
+        -bool IsWithinActiveHours(TimeSpan)
+        -void HandleTimeFailure()
+        -void ResetFailures()
+    }
 
-class LightController {
-   -ITimeProvider _timeProvider
-   -ILightElement _lightElement
-   -int _failures
-   -TimeSpan _startTime
-   -TimeSpan _endTime  
-   -int _maxFailures
-   +TimeSpan StartTime { get; set; }
-   +TimeSpan EndTime { get; set; }
-   +int MaxFailures { get; set; }
-   +bool InSafeMode { get; }
-   +LightController(ITimeProvider, ILightElement)
-   +void Work()
-   -bool IsWithinActiveHours(TimeSpan)
-   -void HandleTimeFailure()
-   -void ResetFailures()
-}
+    class TimeProviderReal {
+        -string _url
+        +string Url
+        +DateTime GetCurrentTime()
+    }
 
-class TimeProviderReal {
-   -string _url
-   +string Url { get; set; }
-   +DateTime GetCurrentTime()
-}
+    class LightElementStub {
+        -bool _isEnabled
+        +bool IsEnabled
+        +void Enable()
+        +void Disable()
+    }
 
-class LightElementStub {
-   -bool _isEnabled
-   +bool IsEnabled { get; }
-   +void Enable()
-   +void Disable()
-}
-
-LightController --> ITimeProvider
-LightController --> ILightElement
-TimeProviderReal ..|> ITimeProvider
-LightElementStub ..|> ILightElement
-
-@enduml
+    LightController --> ITimeProvider
+    LightController --> ILightElement
+    TimeProviderReal ..|> ITimeProvider
+    LightElementStub ..|> ILightElement
 ```
+
 ## Test Design & Implementation
 
 ### ZOMBIES Testing Strategy
@@ -258,7 +255,7 @@ The integration tests verify:
 ### Performance Considerations
 
 #### Time Complexity
-* O(1) decision making
+* O(1) decision-making
 * Minimal memory usage
 
 #### Resource Usage
