@@ -1,62 +1,307 @@
-# Smart Light System
+# SmartLight System Design Documentation
 
-## Structure of the Application
+## Table of Contents
+* [Overview](#overview)
+* [System Design Process](#system-design-process)
+* [Architecture](#architecture)
+* [Test Design & Implementation](#test-design--implementation)
+* [Implementation Details](#implementation-details)
+* [Future Enhancements](#future-enhancements)
+* [Conclusion](#conclusion)
 
-The application consists of the following classes:
-- `LightController`: Contains the decision logic for turning the light on and off.
-- `TimeProviderReal`: Fetches the current time via an API.
-- `LightElement` and `LightElementStub`: Implement the `ILightElement` interface and perform actions such as turning a light on and off.
+## Overview
+The SmartLight System is designed to provide automated light control based on time of day. It emphasizes reliability, safety, and maintainability through robust error handling and clear separation of concerns.
 
-## Class Diagram
+### Key Features
+* Time-based light control
+* Automatic overnight handling
+* Fault tolerance with safe mode
+* Configurable time windows
+* API-based time synchronization
 
-![Class Diagram](path/to/your/class-diagram.png)
+## System Design Process
 
-## Tests
+### Initial Analysis
+The system was designed through a systematic approach:
 
-The tests are written using TDD and make use of mocking where necessary. The tests adhere to the ZOMBIES criteria:
+1. **Requirements Analysis**
+* Need for time-based control
+* Requirement for fault tolerance
+* API integration necessity
+* Testing requirements
 
-- **Zero**: The `Work_WhenTimeFailsAndNotInSafeMode_DoNothing` test handles a similar scenario.
-- **One**: `Work_WhenTimeEqualsStartTime_EnablesLight` and `Work_WhenTimeEqualsEndTime_DisablesLight` test the boundary values.
-- **Many**: `Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode` tests multiple consecutive failures.
-- **Boundary**: `Work_WhenTimeEqualsStartTime_EnablesLight` and `Work_WhenTimeEqualsEndTime_DisablesLight` test the boundary values.
-- **Interface**: The tests use the `ITimeProvider` and `ILightElement` interfaces.
-- **Exception**: `Work_WhenTimeFailsAndNotInSafeMode_DoNothing` and `Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode` test exception handling.
-- **Simple**: The tests are simple and focused on specific scenarios.
+2. **Design Decisions**
+* Separation into three main components
+* Use of interfaces for dependency injection
+* Implementation of safe mode
+* Error threshold mechanism
 
-### Test Descriptions
+3. **Pattern Selection**
+* Repository pattern for time retrieval
+* Strategy pattern for light control
+* Factory pattern potential for future extensions
 
-1. **Work_WhenTimeIsDuringActiveHours_EnablesLight**:
-    - Checks if the light is turned on during active hours.
+## Architecture
 
-2. **Work_WhenTimeIsOutsideActiveHours_DisablesLight**:
-    - Checks if the light is turned off outside active hours.
+### Core Components
 
-3. **Work_WhenTimeEqualsStartTime_EnablesLight**:
-    - Checks if the light is turned on when the current time equals the start time.
+1. LightController (Decision Module)
+* **Purpose**: Central decision-making component
+* **Responsibilities**:
+    * Time-based light state management
+    * Failure handling and recovery
+    * Safe mode management
+* **Key Methods**:
+    * `Work()`: Main control loop
+    * Property accessors for configuration
 
-4. **Work_WhenTimeEqualsEndTime_DisablesLight**:
-    - Checks if the light is turned off when the current time equals the end time.
+2. ITimeProvider (Information Provider)
+* **Purpose**: Time information abstraction
+* **Responsibilities**:
+    * Time retrieval from external sources
+    * URL configuration
+* **Implementations**:
+    * `TimeProviderReal`: Production implementation
+    * `TimeProviderStub`: Testing implementation
 
-5. **Work_WhenTimeFailsAndNotInSafeMode_DoNothing**:
-    - Checks if no action is taken when time retrieval fails and the system is not in safe mode.
+3. ILightElement (Action Module)
+* **Purpose**: Light control abstraction
+* **Responsibilities**:
+    * Light state management
+    * Hardware interaction abstraction
+* **Implementations**:
+    * `LightElementStub`: Testing implementation
+    * Future real hardware implementations
 
-6. **Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode**:
-    - Checks if the system enters safe mode after the maximum number of time retrieval failures.
+### Class Diagram
 
-7. **Work_WhenInSafeModeAndTimeSucceeds_ResetsSafeMode**:
-    - Checks if the system exits safe mode after a successful time retrieval.
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
 
-8. **Work_WhenStartTimeEqualsEndTime_LightStaysDisabled**:
-    - Checks if the light remains off when the start time equals the end time.
+interface ITimeProvider {
+   +string Url { get; set; }
+   +DateTime GetCurrentTime()
+}
 
-9. **Work_WhenTimeSpansOvernight_EnablesLightAfterStartTime**:
-    - Checks if the light is turned on when the current time is after the start time, even if the period spans overnight.
+interface ILightElement {
+   +bool IsEnabled { get; }
+   +void Enable()
+   +void Disable()
+}
 
-10. **Work_WhenTimeSpansOvernight_EnablesLightBeforeEndTime**:
-    - Checks if the light is turned on when the current time is before the end time, even if the period spans overnight.
+class LightController {
+   -ITimeProvider _timeProvider
+   -ILightElement _lightElement
+   -int _failures
+   -TimeSpan _startTime
+   -TimeSpan _endTime  
+   -int _maxFailures
+   +TimeSpan StartTime { get; set; }
+   +TimeSpan EndTime { get; set; }
+   +int MaxFailures { get; set; }
+   +bool InSafeMode { get; }
+   +LightController(ITimeProvider, ILightElement)
+   +void Work()
+   -bool IsWithinActiveHours(TimeSpan)
+   -void HandleTimeFailure()
+   -void ResetFailures()
+}
 
-11. **Work_AfterFailure_ResetsFailureCountOnSuccess**:
-    - Checks if the failure count is reset after a successful time retrieval.
+class TimeProviderReal {
+   -string _url
+   +string Url { get; set; }
+   +DateTime GetCurrentTime()
+}
 
-12. **Work_WhenOneMinuteBeforeEndTime_StillEnabled**:
-    - Checks if the light remains on when the current time is one minute before the end time.
+class LightElementStub {
+   -bool _isEnabled
+   +bool IsEnabled { get; }
+   +void Enable()
+   +void Disable()
+}
+
+LightController --> ITimeProvider
+LightController --> ILightElement
+TimeProviderReal ..|> ITimeProvider
+LightElementStub ..|> ILightElement
+
+@enduml
+```
+## Test Design & Implementation
+
+### ZOMBIES Testing Strategy
+
+#### Zero Tests
+
+##### Work_WhenStartTimeEqualsEndTime_LightStaysDisabled
+* **Purpose**: Verifies system behavior with empty time window
+* **Scenario**: Start time equals end time
+* **Expected**: Light remains disabled
+* **Importance**: Ensures system safety in edge cases
+
+#### One Tests
+
+##### Work_WhenTimeIsDuringActiveHours_EnablesLight
+* **Purpose**: Verifies basic active period functionality
+* **Scenario**: Single time check during active hours
+* **Expected**: Light enables correctly
+* **Implementation**: Uses mock time provider
+
+##### Work_WhenTimeIsOutsideActiveHours_DisablesLight
+* **Purpose**: Verifies basic inactive period functionality
+* **Scenario**: Single time check during inactive hours
+* **Expected**: Light disables correctly
+* **Implementation**: Uses mock time provider
+
+#### Many Tests
+
+##### Work_WhenTimeSpansOvernight_EnablesLightAfterStartTime
+* **Purpose**: Verifies overnight functionality
+* **Scenario**: Time after start time but before midnight
+* **Expected**: Light enables correctly
+* **Edge Case**: Handles day boundary
+
+##### Work_WhenTimeSpansOvernight_EnablesLightBeforeEndTime
+* **Purpose**: Verifies early morning functionality
+* **Scenario**: Time after midnight but before end time
+* **Expected**: Light remains enabled
+* **Edge Case**: Handles day boundary
+
+#### Boundary Tests
+
+##### Work_WhenTimeEqualsStartTime_EnablesLight
+* **Purpose**: Verifies exact start time behavior
+* **Scenario**: Time exactly matches start time
+* **Expected**: Light enables precisely at start
+
+##### Work_WhenTimeEqualsEndTime_DisablesLight
+* **Purpose**: Verifies exact end time behavior
+* **Scenario**: Time exactly matches end time
+* **Expected**: Light disables precisely at end
+
+##### Work_WhenOneMinuteBeforeEndTime_StillEnabled
+* **Purpose**: Verifies boundary precision
+* **Scenario**: One minute before end time
+* **Expected**: Light remains enabled
+* **Importance**: Ensures no premature disabling
+
+##### Work_WhenTimeIsExactlyMidnight_HandlesOvernightPeriodCorrectly
+* **Purpose**: Verifies midnight boundary
+* **Scenario**: Time is exactly 00:00
+* **Expected**: Maintains correct state across days
+
+#### Interface Tests
+* Mock implementations verify interface contracts
+* Stub implementations provide controlled test scenarios
+* Real implementations tested in integration tests
+
+#### Exception Tests
+
+##### Work_WhenTimeFailsAndNotInSafeMode_DoNothing
+* **Purpose**: Verifies initial failure handling
+* **Scenario**: Single time service failure
+* **Expected**: Maintains current state
+* **Implementation**: Uses exception-throwing mock
+
+##### Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode
+* **Purpose**: Verifies safe mode transition
+* **Scenario**: Multiple consecutive failures
+* **Expected**: Enters safe mode and disables light
+* **Implementation**: Uses exception-throwing mock
+
+##### Work_WhenInSafeModeAndTimeSucceeds_ResetsSafeMode
+* **Purpose**: Verifies recovery behavior
+* **Scenario**: Success after safe mode
+* **Expected**: Exits safe mode and resumes normal operation
+* **Implementation**: Uses state-changing mock
+
+##### Work_AfterFailure_ResetsFailureCount_OnSuccess
+* **Purpose**: Verifies failure count reset
+* **Scenario**: Success after partial failures
+* **Expected**: Resets failure count
+* **Implementation**: Uses state-changing mock
+
+#### Simple Scenarios
+* Basic time-based control verification
+* State transition verification
+* Normal operation flow testing
+
+### Integration Testing
+The integration tests verify:
+* Real API interaction
+* Time format handling
+* System recovery capabilities
+* Long-running stability
+
+### Test Coverage
+* Unit tests: Core logic and edge cases
+* Integration tests: External dependencies
+* Acceptance tests: User scenarios
+
+## Implementation Details
+
+### Error Handling Strategy
+
+#### Gradual Degradation
+* Counts failures before safe mode
+* Maintains operation during intermittent failures
+
+#### Recovery Mechanism
+* Automatic safe mode exit on success
+* Failure count reset on success
+
+#### Safety Measures
+* Light disabled in safe mode
+* Conservative time window handling
+
+### Performance Considerations
+
+#### Time Complexity
+* O(1) decision making
+* Minimal memory usage
+
+#### Resource Usage
+* Efficient time comparisons
+* Minimal state storage
+
+## Future Enhancements
+
+### Potential Extensions
+
+#### Additional Features
+* Multiple time windows per day
+* Gradual dimming
+* Motion sensor integration
+* Weather condition integration
+
+#### Technical Improvements
+* Caching layer for time service
+* Configuration persistence
+* Real-time monitoring
+* Health metrics
+
+### Scaling Considerations
+
+#### Multiple Light Support
+* Light group management
+* Zone-based control
+* Hierarchical configuration
+
+#### Integration Capabilities
+* Smart home systems
+* Building automation
+* Energy management systems
+
+## Conclusion
+The SmartLight System demonstrates robust design through:
+* Clear separation of concerns
+* Comprehensive testing strategy
+* Effective error handling
+* Future-proof architecture
+
+The system is production-ready with:
+* Reliable operation
+* Maintainable codebase
+* Extensible design
+* Comprehensive documentation
