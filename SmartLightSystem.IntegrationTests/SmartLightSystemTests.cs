@@ -9,16 +9,16 @@ namespace SmartLightSystem.IntegrationTests;
 
 public class LightControllerTests
 {
-    // Constanten voor URLs en configuratie
+    // Constants for URLs and configuration
     private const string UrlMockoon = "http://localhost:3000/api/time";
     private const string UrlMockoonException = "http://localhost:3000/api/time/exception";
 
-    // Tijdconstanten voor controller configuratie
+    // Time constants for controller configuration
     private static readonly TimeSpan EveningStart = new(20, 0, 0); // 8 PM
     private static readonly TimeSpan MorningEnd = new(6, 0, 0); // 6 AM
     private const int MaxFailures = 2;
 
-    // Tijdconstanten voor tests
+    // Time constants for tests
     private static readonly TimeSpan NightTime = new(22, 0, 0); // 10 PM
     private static readonly TimeSpan DayTime = new(12, 0, 0); // 12 PM
     private static readonly TimeSpan Midnight = new(0, 0, 0); // 12 AM
