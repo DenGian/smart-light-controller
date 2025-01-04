@@ -24,6 +24,7 @@ public class LightControllerTests
     private static readonly TimeSpan Midnight = new(0, 0, 0); // 12 AM
     private static readonly TimeSpan EveningTime = new(21, 0, 0); // 9 PM
 
+    // Test dependencies
     private readonly ITimeProvider _timeProvider;
     private readonly ILightElement _lightElement;
     private readonly LightController _controller;
