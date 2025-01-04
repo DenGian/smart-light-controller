@@ -7,7 +7,7 @@
 * [Test Design & Implementation](#test-design--implementation)
 * [Implementation Details](#implementation-details)
 * [Future Enhancements](#future-enhancements)
-* [Test-Driven Development Approach](#test--driven-development-approach)
+* [Test-Driven Development Approach](#test-driven-development-approach)
 * [Conclusion](#conclusion)
 
 ## Overview
