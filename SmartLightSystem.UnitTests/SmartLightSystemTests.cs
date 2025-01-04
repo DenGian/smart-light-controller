@@ -6,17 +6,21 @@ namespace SmartLightSystem.UnitTests;
 
 public class LightControllerTests
 {
-    // Constants for commonly used times
+    // Time configuration constants
     private const int EveningHour = 20; // 8 PM
     private const int MorningHour = 6; // 6 AM
     private const int MaxFailures = 2;
 
-    private static readonly TimeSpan StandardStartTime = new TimeSpan(EveningHour, 0, 0);
-    private static readonly TimeSpan StandardEndTime = new TimeSpan(MorningHour, 0, 0);
-    private static readonly TimeSpan Midnight = new TimeSpan(0, 0, 0);
-    private static readonly TimeSpan Noon = new TimeSpan(12, 0, 0);
-    private static readonly TimeSpan OneMinute = new TimeSpan(0, 1, 0);
+    // Fixed time values for controller configuration
+    private static readonly TimeSpan StandardStartTime = new(EveningHour, 0, 0); // 8 PM
+    private static readonly TimeSpan StandardEndTime = new(MorningHour, 0, 0); // 6 AM
 
+    // Common time values used in tests
+    private static readonly TimeSpan Midnight = new(0, 0, 0); // 12 AM
+    private static readonly TimeSpan Noon = new(12, 0, 0); // 12 PM
+    private static readonly TimeSpan OneMinute = new(0, 1, 0); // 1 minute interval
+
+    // Test dependencies
     private readonly Mock<ITimeProvider> _timeProviderMock;
     private readonly Mock<ILightElement> _lightElementMock;
     private readonly LightController _controller;
