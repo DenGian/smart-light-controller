@@ -151,7 +151,7 @@ classDiagram
 
 #### Zero Tests
 
-##### Work_WhenStartTimeEqualsEndTime_LightStaysDisabled
+##### 1. Work_WhenStartTimeEqualsEndTime_LightStaysDisabled
 * **Purpose**: Verifies system behavior with empty time window
 * **Scenario**: Start time equals end time
 * **Expected**: Light remains disabled
@@ -159,13 +159,13 @@ classDiagram
 
 #### One Tests
 
-##### Work_WhenTimeIsDuringActiveHours_EnablesLight
+##### 1. Work_WhenTimeIsDuringActiveHours_EnablesLight
 * **Purpose**: Verifies basic active period functionality
 * **Scenario**: Single time check during active hours
 * **Expected**: Light enables correctly
 * **Implementation**: Uses mock time provider
 
-##### Work_WhenTimeIsOutsideActiveHours_DisablesLight
+##### 2. Work_WhenTimeIsOutsideActiveHours_DisablesLight
 * **Purpose**: Verifies basic inactive period functionality
 * **Scenario**: Single time check during inactive hours
 * **Expected**: Light disables correctly
@@ -173,13 +173,13 @@ classDiagram
 
 #### Many Tests
 
-##### Work_WhenTimeSpansOvernight_EnablesLightAfterStartTime
+##### 1. Work_WhenTimeSpansOvernight_EnablesLightAfterStartTime
 * **Purpose**: Verifies overnight functionality
 * **Scenario**: Time after start time but before midnight
 * **Expected**: Light enables correctly
 * **Edge Case**: Handles day boundary
 
-##### Work_WhenTimeSpansOvernight_EnablesLightBeforeEndTime
+##### 2. Work_WhenTimeSpansOvernight_EnablesLightBeforeEndTime
 * **Purpose**: Verifies early morning functionality
 * **Scenario**: Time after midnight but before end time
 * **Expected**: Light remains enabled
@@ -187,23 +187,23 @@ classDiagram
 
 #### Boundary Tests
 
-##### Work_WhenTimeEqualsStartTime_EnablesLight
+##### 1. Work_WhenTimeEqualsStartTime_EnablesLight
 * **Purpose**: Verifies exact start time behavior
 * **Scenario**: Time exactly matches start time
 * **Expected**: Light enables precisely at start
 
-##### Work_WhenTimeEqualsEndTime_DisablesLight
+##### 2. Work_WhenTimeEqualsEndTime_DisablesLight
 * **Purpose**: Verifies exact end time behavior
 * **Scenario**: Time exactly matches end time
 * **Expected**: Light disables precisely at end
 
-##### Work_WhenOneMinuteBeforeEndTime_StillEnabled
+##### 3. Work_WhenOneMinuteBeforeEndTime_StillEnabled
 * **Purpose**: Verifies boundary precision
 * **Scenario**: One minute before end time
 * **Expected**: Light remains enabled
 * **Importance**: Ensures no premature disabling
 
-##### Work_WhenTimeIsExactlyMidnight_HandlesOvernightPeriodCorrectly
+##### 4. Work_WhenTimeIsExactlyMidnight_HandlesOvernightPeriodCorrectly
 * **Purpose**: Verifies midnight boundary
 * **Scenario**: Time is exactly 00:00
 * **Expected**: Maintains correct state across days
@@ -215,25 +215,25 @@ classDiagram
 
 #### Exception Tests
 
-##### Work_WhenTimeFailsAndNotInSafeMode_DoNothing
+##### 1. Work_WhenTimeFailsAndNotInSafeMode_DoNothing
 * **Purpose**: Verifies initial failure handling
 * **Scenario**: Single time service failure
 * **Expected**: Maintains current state
 * **Implementation**: Uses exception-throwing mock
 
-##### Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode
+##### 2. Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode
 * **Purpose**: Verifies safe mode transition
 * **Scenario**: Multiple consecutive failures
 * **Expected**: Enters safe mode and disables light
 * **Implementation**: Uses exception-throwing mock
 
-##### Work_WhenInSafeModeAndTimeSucceeds_ResetsSafeMode
+##### 3. Work_WhenInSafeModeAndTimeSucceeds_ResetsSafeMode
 * **Purpose**: Verifies recovery behavior
 * **Scenario**: Success after safe mode
 * **Expected**: Exits safe mode and resumes normal operation
 * **Implementation**: Uses state-changing mock
 
-##### Work_AfterFailure_ResetsFailureCount_OnSuccess
+##### 4. Work_AfterFailure_ResetsFailureCount_OnSuccess
 * **Purpose**: Verifies failure count reset
 * **Scenario**: Success after partial failures
 * **Expected**: Resets failure count
