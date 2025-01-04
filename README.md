@@ -7,7 +7,7 @@
 * [Test Design & Implementation](#test-design--implementation)
 * [Implementation Details](#implementation-details)
 * [Future Enhancements](#future-enhancements)
-* [Development Approach](#development-approach)
+* [Test-Driven Development Approach](#test--driven-development-approach)
 * [Conclusion](#conclusion)
 
 ## Overview
@@ -310,29 +310,93 @@ The integration tests verify:
 * Building automation
 * Energy management systems
 
-## Development Approach
+## Test-Driven Development Approach
 
-The system was developed using Test-Driven Development (TDD):
+### Initial Design Phase
+Before starting the TDD cycles, the core structure was established:
+* Created `ITimeProvider` interface for time abstraction, allowing both real-time and test implementations
+* Defined `ILightElement` interface for light control, enabling hardware abstraction
+* Setup `LightController` as the main decision-making component
+* Configured Moq for dependency mocking in tests
 
-### First Phase: Core structure and interfaces
-* Defined basic interfaces for time and light control
-* Implemented basic controller structure
-* Created initial tests for basic functionality
+### TDD Implementation using ZOMBIES
 
-### Second Phase: Basic functionality
-* Implemented time-based control
-* Added basic error handling
-* Created tests for normal operation
+#### Zero: Initial State
+First test implemented: `Work_WhenStartTimeEqualsEndTime_LightStaysDisabled`
+* **Red**: Created initial test for edge case where start and end times are equal
+* **Green**: Implemented basic time comparison in `LightController`
+* **Refactor**: Established core properties for `StartTime` and `EndTime`
 
-### Third Phase: Error handling and edge cases
-* Added safe mode functionality
-* Implemented failure counting
-* Created tests for error scenarios
+#### One: Basic Functionality
+Implemented core time-based control through two essential tests:
 
-### Fourth Phase: Refinement
-* Added boundary condition handling
-* Improved overnight period handling
-* Added tests for edge cases
+1. `Work_WhenTimeIsDuringActiveHours_EnablesLight`
+  * **Red**: Test for basic light enabling during active hours
+  * **Green**: Added time window check and light control logic
+  * **Refactor**: Extracted time comparison logic
+
+2. `Work_WhenTimeIsOutsideActiveHours_DisablesLight`
+  * **Red**: Test for light disabling outside active window
+  * **Green**: Extended time comparison for inactive periods
+  * **Refactor**: Improved time window logic
+
+#### Multiple: Complex Scenarios
+Added overnight period handling:
+
+1. `Work_WhenTimeSpansOvernight_EnablesLightAfterStartTime`
+  * **Red**: Test for evening activation (10 PM)
+  * **Green**: Implemented inverted time window logic
+  * **Refactor**: Separated normal and overnight period handling
+
+2. `Work_WhenTimeSpansOvernight_EnablesLightBeforeEndTime`
+  * **Red**: Test for morning state (5 AM)
+  * **Green**: Extended overnight logic
+  * **Refactor**: Refined time comparison for overnight periods
+
+#### Boundary: Edge Cases
+Added precise timing tests:
+
+1. Exact Time Matching:
+  * `Work_WhenTimeEqualsStartTime_EnablesLight`
+  * `Work_WhenTimeEqualsEndTime_DisablesLight`
+  * `Work_WhenOneMinuteBeforeEndTime_StillEnabled`
+
+2. Critical Points:
+  * `Work_WhenTimeIsExactlyMidnight_HandlesOvernightPeriodCorrectly`
+
+#### Interface: Error States
+Implemented error handling through mocked interfaces:
+
+1. Failure Handling:
+  * `Work_WhenTimeFailsAndNotInSafeMode_DoNothing`
+  * `Work_WhenTimeFailsAndMaxFailuresReached_EntersSafeMode`
+
+2. Recovery Logic:
+  * `Work_WhenInSafeModeAndTimeSucceeds_ResetsSafeMode`
+  * `Work_AfterFailure_ResetsFailureCountOnSuccess`
+
+### Mocking Strategy
+* Used Moq framework for interface mocking
+* Created test constants for consistent time values:
+  * `StandardStartTime` (8 PM)
+  * `StandardEndTime` (6 AM)
+  * `Midnight`, `Noon`, `OneMinute`
+* Implemented specific mock behaviors:
+  * Time provider failure simulation
+  * Light element state verification
+  * Safe mode transition testing
+
+### Final Refactoring
+* Consolidated error handling with `_failures` counter
+* Improved time comparison logic for all scenarios
+* Added robust error recovery with failure count reset
+* Implemented safe mode as a calculated property
+
+This TDD approach resulted in:
+* 100% test coverage of critical paths
+* Clean separation of concerns through interfaces
+* Robust error handling with recovery mechanisms
+* Clear and maintainable codebase
 
 ## Conclusion
 The SmartLight System demonstrates robust design through:
