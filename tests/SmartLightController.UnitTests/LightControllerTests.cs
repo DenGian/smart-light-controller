@@ -1,11 +1,12 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Controllers;
-using SmartLightSystem.Exceptions;
-using SmartLightSystem.Interfaces;
+using SmartLightController.Configuration;
+using SmartLightController.Controllers;
+using SmartLightController.Exceptions;
+using SmartLightController.Interfaces;
 
-namespace SmartLightSystem.UnitTests;
+namespace SmartLightController.UnitTests;
 
 public sealed class LightControllerTests
 {
@@ -62,9 +63,46 @@ public sealed class LightControllerTests
     }
 
     [Fact]
-    public async Task SuccessAfterSafeMode_RecoversAndResetsFailures()
+    public async Task SafeModeTransition_IsLoggedExactlyOnce()
+    {
+        var logger = new RecordingLogger();
+        var (controller, _, time) = CreateController(
+            new DateTimeOffset(2026, 1, 1, 21, 0, 0, TimeSpan.Zero),
+            logger);
+        time.Exception = new TimeProviderException("Unavailable");
+
+        await controller.RunOnceAsync();
+        await controller.RunOnceAsync();
+        await controller.RunOnceAsync();
+
+        var transition = Assert.Single(logger.Entries, entry => entry.EventId.Id == 3);
+        Assert.Equal(LogLevel.Error, transition.Level);
+    }
+
+    [Fact]
+    public async Task FailureWhileAlreadyInSafeMode_RemainsSafeWithoutRepeatingOutput()
     {
         var (controller, light, time) = CreateController(new DateTimeOffset(2026, 1, 1, 21, 0, 0, TimeSpan.Zero));
+        await controller.RunOnceAsync();
+        time.Exception = new TimeProviderException("Unavailable");
+        await controller.RunOnceAsync();
+        await controller.RunOnceAsync();
+
+        await controller.RunOnceAsync();
+
+        Assert.True(controller.IsInSafeMode);
+        Assert.Equal(3, controller.ConsecutiveFailures);
+        Assert.False(light.IsEnabled);
+        Assert.Equal(2, light.StateChanges);
+    }
+
+    [Fact]
+    public async Task SuccessAfterSafeMode_RecoversAndResetsFailures()
+    {
+        var logger = new RecordingLogger();
+        var (controller, light, time) = CreateController(
+            new DateTimeOffset(2026, 1, 1, 21, 0, 0, TimeSpan.Zero),
+            logger);
         time.Exception = new TimeProviderException("Unavailable");
         await controller.RunOnceAsync();
         await controller.RunOnceAsync();
@@ -75,6 +113,7 @@ public sealed class LightControllerTests
         Assert.True(light.IsEnabled);
         Assert.False(controller.IsInSafeMode);
         Assert.Equal(0, controller.ConsecutiveFailures);
+        Assert.Single(logger.Entries, entry => entry.EventId.Id == 1);
     }
 
     [Fact]
@@ -110,7 +149,8 @@ public sealed class LightControllerTests
     }
 
     private static (LightController Controller, RecordingLightOutput Light, MutableTimeProvider Time) CreateController(
-        DateTimeOffset currentTime)
+        DateTimeOffset currentTime,
+        ILogger<LightController>? logger = null)
     {
         var time = new MutableTimeProvider { CurrentTime = currentTime };
         var light = new RecordingLightOutput();
@@ -118,7 +158,7 @@ public sealed class LightControllerTests
             time,
             light,
             Options.Create(CreateOptions()),
-            NullLogger<LightController>.Instance);
+            logger ?? NullLogger<LightController>.Instance);
         return (controller, light, time);
     }
 
@@ -159,4 +199,24 @@ public sealed class LightControllerTests
             StateChanges++;
         }
     }
+
+    private sealed class RecordingLogger : ILogger<LightController>
+    {
+        public List<LogEntry> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter) =>
+            Entries.Add(new LogEntry(logLevel, eventId));
+    }
+
+    private sealed record LogEntry(LogLevel Level, EventId EventId);
 }
