@@ -1,12 +1,12 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Exceptions;
-using SmartLightSystem.Interfaces;
-using SmartLightSystem.Models;
+using SmartLightController.Configuration;
+using SmartLightController.Exceptions;
+using SmartLightController.Interfaces;
+using SmartLightController.Models;
 
-namespace SmartLightSystem.Services;
+namespace SmartLightController.Services;
 
 public sealed class HttpTimeProvider : ITimeProvider
 {
