@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightSystem", "SmartLightSystem\SmartLightSystem.csproj", "{FB5DB48A-0987-4BFA-926A-E4333C95A741}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightController", "src\SmartLightController\SmartLightController.csproj", "{FB5DB48A-0987-4BFA-926A-E4333C95A741}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightSystem.UnitTests", "SmartLightSystem.UnitTests\SmartLightSystem.UnitTests.csproj", "{E1A296A2-C640-4CC9-A32D-F45CC603966C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightController.UnitTests", "tests\SmartLightController.UnitTests\SmartLightController.UnitTests.csproj", "{E1A296A2-C640-4CC9-A32D-F45CC603966C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightSystem.IntegrationTests", "SmartLightSystem.IntegrationTests\SmartLightSystem.IntegrationTests.csproj", "{6E784E69-9D3D-449E-A170-84622A03A601}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightController.IntegrationTests", "tests\SmartLightController.IntegrationTests\SmartLightController.IntegrationTests.csproj", "{6E784E69-9D3D-449E-A170-84622A03A601}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightSystem.AcceptanceTests", "SmartLightSystem.AcceptanceTests\SmartLightSystem.AcceptanceTests.csproj", "{E2850EAC-77D6-438C-BEAB-8C924ABAAE71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartLightController.AcceptanceTests", "tests\SmartLightController.AcceptanceTests\SmartLightController.AcceptanceTests.csproj", "{E2850EAC-77D6-438C-BEAB-8C924ABAAE71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
