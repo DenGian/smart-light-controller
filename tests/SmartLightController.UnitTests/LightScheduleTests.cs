@@ -1,6 +1,6 @@
-using SmartLightSystem.Models;
+using SmartLightController.Models;
 
-namespace SmartLightSystem.UnitTests;
+namespace SmartLightController.UnitTests;
 
 public sealed class LightScheduleTests
 {
