@@ -17,7 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SmartLightSystem\SmartLightSystem.csproj" />
+      <ProjectReference Include="..\..\src\SmartLightController\SmartLightController.csproj" />
     </ItemGroup>
 
 </Project>
