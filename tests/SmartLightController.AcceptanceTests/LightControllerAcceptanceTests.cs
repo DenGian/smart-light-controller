@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Controllers;
-using SmartLightSystem.Exceptions;
-using SmartLightSystem.Interfaces;
+using SmartLightController.Configuration;
+using SmartLightController.Controllers;
+using SmartLightController.Exceptions;
+using SmartLightController.Interfaces;
 
-namespace SmartLightSystem.AcceptanceTests;
+namespace SmartLightController.AcceptanceTests;
 
 public sealed class LightControllerAcceptanceTests
 {
