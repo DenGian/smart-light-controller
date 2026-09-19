@@ -2,13 +2,13 @@ using System.Net;
 using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Controllers;
-using SmartLightSystem.Exceptions;
-using SmartLightSystem.Interfaces;
-using SmartLightSystem.Services;
+using SmartLightController.Configuration;
+using SmartLightController.Controllers;
+using SmartLightController.Exceptions;
+using SmartLightController.Interfaces;
+using SmartLightController.Services;
 
-namespace SmartLightSystem.IntegrationTests;
+namespace SmartLightController.IntegrationTests;
 
 public sealed class HttpTimeProviderTests
 {
