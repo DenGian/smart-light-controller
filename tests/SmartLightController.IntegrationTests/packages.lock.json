@@ -354,7 +354,7 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "smartlightsystem": {
+      "smartlightcontroller": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Hosting": "[10.0.12, )"
