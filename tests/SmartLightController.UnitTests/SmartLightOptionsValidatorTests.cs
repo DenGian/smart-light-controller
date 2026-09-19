@@ -1,6 +1,6 @@
-using SmartLightSystem.Configuration;
+using SmartLightController.Configuration;
 
-namespace SmartLightSystem.UnitTests;
+namespace SmartLightController.UnitTests;
 
 public sealed class SmartLightOptionsValidatorTests
 {
