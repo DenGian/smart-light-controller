@@ -1,11 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Controllers;
-using SmartLightSystem.HostedServices;
-using SmartLightSystem.Interfaces;
-using SmartLightSystem.Services;
+using SmartLightController.Configuration;
+using SmartLightController.Controllers;
+using SmartLightController.HostedServices;
+using SmartLightController.Interfaces;
+using SmartLightController.Services;
 
 var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
 {
