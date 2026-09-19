@@ -52,5 +52,5 @@ jobs:
           path: artifacts/coverage/**/coverage.cobertura.xml
           if-no-files-found: error
 
-      - name: Audit vulnerable dependencies
-        run: dotnet list package --vulnerable --include-transitive
+      - name: Audit runtime dependencies
+        run: dotnet package list --project SmartLightSystem/SmartLightSystem.csproj --vulnerable --include-transitive --no-restore
