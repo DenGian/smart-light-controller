@@ -1,4 +1,4 @@
-namespace SmartLightSystem.Exceptions;
+namespace SmartLightController.Exceptions;
 
 public sealed class TimeProviderException : Exception
 {
