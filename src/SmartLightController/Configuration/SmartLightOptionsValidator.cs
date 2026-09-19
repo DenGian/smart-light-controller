@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace SmartLightSystem.Configuration;
+namespace SmartLightController.Configuration;
 
 public sealed class SmartLightOptionsValidator : IValidateOptions<SmartLightOptions>
 {
