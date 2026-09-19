@@ -1,85 +1,99 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SmartLightSystem.Configuration;
+using SmartLightSystem.Exceptions;
 using SmartLightSystem.Interfaces;
+using SmartLightSystem.Models;
 
 namespace SmartLightSystem.Controllers;
 
-public class LightController
+public sealed partial class LightController
 {
     private readonly ITimeProvider _timeProvider;
-    private readonly ILightElement _lightElement;
+    private readonly ILightOutput _lightOutput;
+    private readonly LightSchedule _schedule;
+    private readonly SmartLightOptions _options;
+    private readonly ILogger<LightController> _logger;
 
-    private int _failures = 0;
-
-    private TimeSpan _startTime;
-    public TimeSpan StartTime
-    {
-        get { return _startTime; }
-        set { _startTime = value; }
-    }
-
-    private TimeSpan _endTime;
-    public TimeSpan EndTime
-    {
-        get { return _endTime; }
-        set { _endTime = value; }
-    }
-
-    private int _maxFailures;
-    public int MaxFailures
-    {
-        get { return _maxFailures; }
-        set { _maxFailures = value; }
-    }
-
-    public bool InSafeMode
-    {
-        get { return _failures >= MaxFailures; }
-    }
-
-    public LightController(ITimeProvider timeProvider, ILightElement lightElement)
+    public LightController(
+        ITimeProvider timeProvider,
+        ILightOutput lightOutput,
+        IOptions<SmartLightOptions> options,
+        ILogger<LightController> logger)
     {
         _timeProvider = timeProvider;
-        _lightElement = lightElement;
+        _lightOutput = lightOutput;
+        _options = options.Value;
+        _schedule = new LightSchedule(_options.ActiveStart, _options.ActiveEnd);
+        _logger = logger;
     }
 
-    public void Work()
+    public int ConsecutiveFailures { get; private set; }
+
+    public bool IsInSafeMode => ConsecutiveFailures >= _options.MaxConsecutiveFailures;
+
+    public async Task RunOnceAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            DateTime currentTime = _timeProvider.GetCurrentTime();
-            _failures = 0;
+            var currentTime = await _timeProvider.GetCurrentTimeAsync(cancellationToken);
+            var wasInSafeMode = IsInSafeMode;
+            ConsecutiveFailures = 0;
 
-            TimeSpan current = currentTime.TimeOfDay;
+            if (wasInSafeMode)
+            {
+                LogTimeSourceRecovered(_logger);
+            }
 
-            if (StartTime <= EndTime)
-            {
-                if (current >= StartTime && current < EndTime)
-                {
-                    _lightElement.Enable();
-                }
-                else
-                {
-                    _lightElement.Disable();
-                }
-            }
-            else
-            {
-                if (current >= StartTime || current < EndTime)
-                {
-                    _lightElement.Enable();
-                }
-                else
-                {
-                    _lightElement.Disable();
-                }
-            }
+            ApplyState(_schedule.IsActiveAt(TimeOnly.FromDateTime(currentTime.DateTime)));
         }
-        catch
+        catch (TimeProviderException exception)
         {
-            _failures++;
-            if (_failures >= MaxFailures)
+            ConsecutiveFailures++;
+            LogTimeReadFailed(
+                _logger,
+                exception,
+                ConsecutiveFailures,
+                _options.MaxConsecutiveFailures);
+
+            if (IsInSafeMode)
             {
-                _lightElement.Disable();
+                ApplyState(false);
+                LogSafeModeActive(_logger, ConsecutiveFailures);
             }
         }
     }
+
+    private void ApplyState(bool shouldBeEnabled)
+    {
+        if (_lightOutput.IsEnabled == shouldBeEnabled)
+        {
+            return;
+        }
+
+        _lightOutput.SetEnabled(shouldBeEnabled);
+        LogLightStateChanged(_logger, shouldBeEnabled);
+    }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Time source recovered; leaving safe mode.")]
+    private static partial void LogTimeSourceRecovered(ILogger logger);
+
+    [LoggerMessage(
+        EventId = 2,
+        Level = LogLevel.Warning,
+        Message = "Time read failed ({FailureCount}/{FailureThreshold}).")]
+    private static partial void LogTimeReadFailed(
+        ILogger logger,
+        Exception exception,
+        int failureCount,
+        int failureThreshold);
+
+    [LoggerMessage(
+        EventId = 3,
+        Level = LogLevel.Error,
+        Message = "Safe mode active after {FailureCount} consecutive time-read failures; light is off.")]
+    private static partial void LogSafeModeActive(ILogger logger, int failureCount);
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Light output changed: {Enabled}.")]
+    private static partial void LogLightStateChanged(ILogger logger, bool enabled);
 }
