@@ -1,4 +1,4 @@
-namespace SmartLightSystem.Configuration;
+namespace SmartLightController.Configuration;
 
 public sealed class SmartLightOptions
 {
