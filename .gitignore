@@ -298,4 +298,5 @@ __pycache__/
 
 .config/
 
-appsettings.json
+# Local configuration overrides (the documented defaults remain tracked).
+appsettings.*.local.json
