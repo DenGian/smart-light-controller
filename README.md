@@ -57,26 +57,26 @@ A failed time read preserves the current light state while the consecutive-failu
 Prerequisite: a .NET 10 SDK compatible with `global.json`.
 
 ```bash
-dotnet restore
-dotnet build --configuration Release --no-restore
-dotnet run --project SmartLightSystem
+dotnet restore SmartLightController.sln
+dotnet build SmartLightController.sln --configuration Release --no-restore
+dotnet run --project src/SmartLightController/SmartLightController.csproj
 ```
 
 Stop the demo with Ctrl+C. The normal test suite is entirely local and does not contact the configured time service:
 
 ```bash
-dotnet test --configuration Release
+dotnet test SmartLightController.sln --configuration Release
 ```
 
 Collect coverage without enforcing a vanity threshold:
 
 ```bash
-dotnet test --configuration Release --collect:"XPlat Code Coverage" --results-directory artifacts/coverage
+dotnet test SmartLightController.sln --configuration Release --collect:"XPlat Code Coverage" --results-directory artifacts/coverage
 ```
 
 ## Configuration
 
-Settings live under `SmartLight` in `SmartLightSystem/appsettings.json`. They can also be overridden with standard .NET configuration providers—for example, `SmartLight__PollingInterval=00:00:30` as an environment variable.
+Settings live under `SmartLight` in `src/SmartLightController/appsettings.json`. They can also be overridden with standard .NET configuration providers—for example, `SmartLight__PollingInterval=00:00:30` as an environment variable.
 
 | Setting | Default | Purpose |
 | --- | --- | --- |
