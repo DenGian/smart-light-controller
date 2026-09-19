@@ -1,10 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace SmartLightSystem.Models;
 
-public class TimeResponse
+internal sealed record TimeResponse
 {
-    public string datetime { get; set; }
-    public int day_of_week { get; set; }
-    public int day_of_year { get; set; }
-    public int week_number { get; set; }
-    public string timezone { get; set; }
+    [JsonPropertyName("datetime")]
+    public DateTimeOffset? DateTime { get; init; }
 }
