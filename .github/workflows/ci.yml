@@ -28,22 +28,22 @@ jobs:
           cache-dependency-path: "**/packages.lock.json"
 
       - name: Restore dependencies
-        run: dotnet restore --locked-mode
+        run: dotnet restore SmartLightController.sln --locked-mode
 
       - name: Verify formatting
-        run: dotnet format --verify-no-changes --no-restore
+        run: dotnet format SmartLightController.sln --verify-no-changes --no-restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build SmartLightController.sln --configuration Release --no-restore
 
       - name: Run unit tests
-        run: dotnet test SmartLightSystem.UnitTests/SmartLightSystem.UnitTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/unit
+        run: dotnet test tests/SmartLightController.UnitTests/SmartLightController.UnitTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/unit
 
       - name: Run integration tests
-        run: dotnet test SmartLightSystem.IntegrationTests/SmartLightSystem.IntegrationTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/integration
+        run: dotnet test tests/SmartLightController.IntegrationTests/SmartLightController.IntegrationTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/integration
 
       - name: Run acceptance tests
-        run: dotnet test SmartLightSystem.AcceptanceTests/SmartLightSystem.AcceptanceTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/acceptance
+        run: dotnet test tests/SmartLightController.AcceptanceTests/SmartLightController.AcceptanceTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/acceptance
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v7
@@ -53,4 +53,4 @@ jobs:
           if-no-files-found: error
 
       - name: Audit runtime dependencies
-        run: dotnet package list --project SmartLightSystem/SmartLightSystem.csproj --vulnerable --include-transitive --no-restore
+        run: dotnet package list --project src/SmartLightController/SmartLightController.csproj --vulnerable --include-transitive --no-restore
