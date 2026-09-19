@@ -7,10 +7,11 @@ Small, focused issues and pull requests are welcome.
 Install a supported .NET 10 SDK, then run:
 
 ```bash
-dotnet restore
-dotnet format --verify-no-changes
-dotnet build --configuration Release --no-restore
-dotnet test --configuration Release --no-build
+dotnet restore SmartLightController.sln
+dotnet format SmartLightController.sln --verify-no-changes --no-restore
+dotnet build SmartLightController.sln --configuration Release --no-restore
+dotnet test SmartLightController.sln --configuration Release --no-build
+dotnet package list --project src/SmartLightController/SmartLightController.csproj --vulnerable --include-transitive --no-restore
 ```
 
 Keep tests deterministic: do not call public services or require a manually started local server. Describe behavior changes and add tests at the lowest useful level.
