@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Exceptions;
-using SmartLightSystem.Interfaces;
-using SmartLightSystem.Models;
+using SmartLightController.Configuration;
+using SmartLightController.Exceptions;
+using SmartLightController.Interfaces;
+using SmartLightController.Models;
 
-namespace SmartLightSystem.Controllers;
+namespace SmartLightController.Controllers;
 
 public sealed partial class LightController
 {
@@ -49,6 +49,7 @@ public sealed partial class LightController
         }
         catch (TimeProviderException exception)
         {
+            var wasInSafeMode = IsInSafeMode;
             ConsecutiveFailures++;
             LogTimeReadFailed(
                 _logger,
@@ -59,7 +60,11 @@ public sealed partial class LightController
             if (IsInSafeMode)
             {
                 ApplyState(false);
-                LogSafeModeActive(_logger, ConsecutiveFailures);
+
+                if (!wasInSafeMode)
+                {
+                    LogSafeModeEntered(_logger, ConsecutiveFailures);
+                }
             }
         }
     }
@@ -91,8 +96,8 @@ public sealed partial class LightController
     [LoggerMessage(
         EventId = 3,
         Level = LogLevel.Error,
-        Message = "Safe mode active after {FailureCount} consecutive time-read failures; light is off.")]
-    private static partial void LogSafeModeActive(ILogger logger, int failureCount);
+        Message = "Entering safe mode after {FailureCount} consecutive time-read failures; light is off.")]
+    private static partial void LogSafeModeEntered(ILogger logger, int failureCount);
 
     [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "Light output changed: {Enabled}.")]
     private static partial void LogLightStateChanged(ILogger logger, bool enabled);
