@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Verify formatting
+        run: dotnet format --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run unit tests
+        run: dotnet test SmartLightSystem.UnitTests/SmartLightSystem.UnitTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/unit
+
+      - name: Run integration tests
+        run: dotnet test SmartLightSystem.IntegrationTests/SmartLightSystem.IntegrationTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/integration
+
+      - name: Run acceptance tests
+        run: dotnet test SmartLightSystem.AcceptanceTests/SmartLightSystem.AcceptanceTests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" --results-directory artifacts/coverage/acceptance
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-reports
+          path: artifacts/coverage/**/coverage.cobertura.xml
+          if-no-files-found: error
+
+      - name: Audit vulnerable dependencies
+        run: dotnet list package --vulnerable --include-transitive
