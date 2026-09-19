@@ -3,6 +3,7 @@
 A fault-tolerant .NET smart-light simulation that applies configurable schedules and enters a safe state when its time source repeatedly fails.
 
 [![CI](https://github.com/DenGian/smart-light-controller/actions/workflows/ci.yml/badge.svg)](https://github.com/DenGian/smart-light-controller/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/DenGian/smart-light-controller/actions/workflows/codeql.yml/badge.svg)](https://github.com/DenGian/smart-light-controller/actions/workflows/codeql.yml)
 
 ## Why this project exists
 
