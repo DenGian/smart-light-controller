@@ -1,4 +1,4 @@
-namespace SmartLightSystem.Interfaces;
+namespace SmartLightController.Interfaces;
 
 public interface ITimeProvider
 {
