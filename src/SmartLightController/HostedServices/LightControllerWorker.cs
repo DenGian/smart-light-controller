@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SmartLightSystem.Configuration;
-using SmartLightSystem.Controllers;
+using SmartLightController.Configuration;
+using SmartLightController.Controllers;
 
-namespace SmartLightSystem.HostedServices;
+namespace SmartLightController.HostedServices;
 
 public sealed partial class LightControllerWorker(
     LightController controller,
