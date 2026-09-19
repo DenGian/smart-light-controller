@@ -1,4 +1,4 @@
-namespace SmartLightSystem.Models;
+namespace SmartLightController.Models;
 
 public sealed record LightSchedule(TimeOnly Start, TimeOnly End)
 {
